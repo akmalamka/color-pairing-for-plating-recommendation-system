@@ -8,6 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 import cv2
+from sklearn.cluster import KMeans
 
 class App(Frame):
 
@@ -15,6 +16,10 @@ class App(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.mainPanel = Label(self.parent) # panel yang nampilin gambar
+        self.CLUSTERS = 2
+        self.IMAGE = None
+        self.COLORS = None
+        self.LABELS = None
         self.initUI()
     
     def initUI(self):
@@ -69,6 +74,33 @@ class App(Frame):
         # print('aaa')
         # status = cv2.imwrite("extracted_image.jpg", self.extracted_image)
         # print(status)
+
+        self.dominantColors = self.dominant_colors()
+        print(self.dominantColors)
+
+    def dominant_colors(self):
+        
+        #convert to rgb from bgr
+        img = cv2.cvtColor(self.extracted_image, cv2.COLOR_BGR2RGB)
+                
+        #reshaping to a list of pixels
+        img = img.reshape((img.shape[0] * img.shape[1], 3))
+        
+        #save image after operations
+        self.IMAGE = img
+        
+        #using k-means to cluster pixels
+        kmeans = KMeans(n_clusters = self.CLUSTERS)
+        kmeans.fit(img)
+        
+        #the cluster centers are our dominant colors.
+        self.COLORS = kmeans.cluster_centers_
+        
+        #save labels
+        self.LABELS = kmeans.labels_
+        
+        #returning after converting to integer from float
+        return self.COLORS.astype(int)
 
 def main():
     root = Tk()
