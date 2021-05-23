@@ -2,13 +2,11 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
-import matplotlib.pyplot as plt
-from tkinter.filedialog import asksaveasfile, asksaveasfilename
-import os
 import numpy as np
-import pandas as pd
 import cv2
 from sklearn.cluster import KMeans
+import requests
+import json
 
 class App(Frame):
 
@@ -103,6 +101,25 @@ class App(Frame):
         return self.COLORS.astype(int)
 
 def main():
+    
+    data = '{"model":"default"}'
+
+    response = requests.post('http://colormind.io/api/', data=data)
+    print(response.content)
+    print(type(response.content))
+
+    # Decode UTF-8 bytes to Unicode, and convert single quotes 
+    # to double quotes to make it valid JSON
+    my_json = response.content.decode('utf8').replace("'", '"')
+    print(my_json)
+    print('- ' * 20)
+
+    # Load the JSON to a Python list & dump it back out as formatted JSON
+    data = json.loads(my_json)
+    s = json.dumps(data, indent=4, sort_keys=True)
+    print(s)
+    print((data['result'][1]))
+
     root = Tk()
     root.geometry('500x400')
     app = App(root)
