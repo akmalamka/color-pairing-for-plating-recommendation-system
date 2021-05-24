@@ -18,12 +18,20 @@ class App(Frame):
         self.IMAGE = None
         self.COLORS = None
         self.LABELS = None
+        self.canvas = Canvas(self.parent, width=250, height=200)
         self.initUI()
     
     def initUI(self):
         self.parent.title("Mini Photoshop")
         self.openPlateImageButton = Button(self.parent, command=self.open_plate_image_click, text="Open Plate Image")
         self.openPlateImageButton.pack(side=TOP)
+        colorval = "#%02x%02x%02x" % (109, 170, 44)
+        self.canvas.create_rectangle(0, 0, 50, 50, fill=colorval)
+        self.canvas.create_rectangle(50, 0, 100, 50, fill="red")
+        self.canvas.create_rectangle(100, 0, 150, 50, fill="yellow")
+        self.canvas.create_rectangle(150, 0, 200, 50, fill="green")
+        self.canvas.create_rectangle(200, 0, 250, 50, fill="black") 
+        self.canvas.pack(side=BOTTOM)
 
     def open_filename(self): 
         # open file dialog box to select image 
