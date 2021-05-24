@@ -77,12 +77,11 @@ class App(Frame):
         self.extracted_image = cv2.drawContours(mask,[c],0,255,-1,)
 
         self.extracted_image = cv2.bitwise_and(img_rgb, img_rgb, mask = equalize)
-        # print('aaa')
-        # status = cv2.imwrite("extracted_image.jpg", self.extracted_image)
-        # print(status)
 
         self.dominantColors = self.dominant_colors()
-        print(self.dominantColors)
+        print('dominant color', self.dominantColors)
+
+        self.getRecommendedColorPalette()
 
     def dominant_colors(self):
         
@@ -104,30 +103,39 @@ class App(Frame):
         
         #save labels
         self.LABELS = kmeans.labels_
-        
-        #returning after converting to integer from float
-        return self.COLORS.astype(int)
+        colorInt = self.COLORS.astype(int)
+        # npColorInt = np.array(colorInt)
+        # print('colorInt', npColorInt)
+        if (colorInt[0][0] + colorInt[0][1] + colorInt[0][2] >= colorInt[1][0] + colorInt[1][1] + colorInt[1][2]):
+            # print('str', str(npColorInt[0]))
+            return colorInt[0]
+        else:
+            # print('str', str(npColorInt[1]))
+            return colorInt[1]
+
+    def getRecommendedColorPalette(self):
+        # data = '{"model":"default"}'
+        colorPalette = '[' + str(self.dominantColors[0]) + ',' + str(self.dominantColors[1]) + ',' + str(self.dominantColors[2]) + ']'
+        data = '{"input":[' + colorPalette + ',"N","N","N","N"],"model":"default"}'
+
+        response = requests.post('http://colormind.io/api/', data=data)
+        print(response.content)
+        print(type(response.content))
+
+        # Decode UTF-8 bytes to Unicode, and convert single quotes 
+        # to double quotes to make it valid JSON
+        my_json = response.content.decode('utf8').replace("'", '"')
+        print(my_json)
+        print('- ' * 20)
+
+        # Load the JSON to a Python list & dump it back out as formatted JSON
+        data = json.loads(my_json)
+        s = json.dumps(data, indent=4, sort_keys=True)
+        print(s)
+        print((data['result'][1]))
+
 
 def main():
-    
-    data = '{"model":"default"}'
-
-    response = requests.post('http://colormind.io/api/', data=data)
-    print(response.content)
-    print(type(response.content))
-
-    # Decode UTF-8 bytes to Unicode, and convert single quotes 
-    # to double quotes to make it valid JSON
-    my_json = response.content.decode('utf8').replace("'", '"')
-    print(my_json)
-    print('- ' * 20)
-
-    # Load the JSON to a Python list & dump it back out as formatted JSON
-    data = json.loads(my_json)
-    s = json.dumps(data, indent=4, sort_keys=True)
-    print(s)
-    print((data['result'][1]))
-
     root = Tk()
     root.geometry('500x400')
     app = App(root)
