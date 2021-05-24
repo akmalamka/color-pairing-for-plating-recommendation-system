@@ -25,14 +25,7 @@ class App(Frame):
         self.parent.title("Mini Photoshop")
         self.openPlateImageButton = Button(self.parent, command=self.open_plate_image_click, text="Open Plate Image")
         self.openPlateImageButton.pack(side=TOP)
-        colorval = "#%02x%02x%02x" % (109, 170, 44)
-        self.canvas.create_rectangle(0, 0, 50, 50, fill=colorval)
-        self.canvas.create_rectangle(50, 0, 100, 50, fill="red")
-        self.canvas.create_rectangle(100, 0, 150, 50, fill="yellow")
-        self.canvas.create_rectangle(150, 0, 200, 50, fill="green")
-        self.canvas.create_rectangle(200, 0, 250, 50, fill="black") 
-        self.canvas.pack(side=BOTTOM)
-
+        
     def open_filename(self): 
         # open file dialog box to select image 
         self.filename = filedialog.askopenfilename(title ='Open') 
@@ -81,7 +74,9 @@ class App(Frame):
         self.dominantColors = self.dominant_colors()
         print('dominant color', self.dominantColors)
 
-        self.getRecommendedColorPalette()
+        self.get_recommended_color_palette()
+
+        self.display_recommended_color_palette()
 
     def dominant_colors(self):
         
@@ -104,35 +99,32 @@ class App(Frame):
         #save labels
         self.LABELS = kmeans.labels_
         colorInt = self.COLORS.astype(int)
-        # npColorInt = np.array(colorInt)
-        # print('colorInt', npColorInt)
+
         if (colorInt[0][0] + colorInt[0][1] + colorInt[0][2] >= colorInt[1][0] + colorInt[1][1] + colorInt[1][2]):
-            # print('str', str(npColorInt[0]))
             return colorInt[0]
         else:
-            # print('str', str(npColorInt[1]))
             return colorInt[1]
 
-    def getRecommendedColorPalette(self):
+    def get_recommended_color_palette(self):
         # data = '{"model":"default"}'
         colorPalette = '[' + str(self.dominantColors[0]) + ',' + str(self.dominantColors[1]) + ',' + str(self.dominantColors[2]) + ']'
         data = '{"input":[' + colorPalette + ',"N","N","N","N"],"model":"default"}'
 
         response = requests.post('http://colormind.io/api/', data=data)
-        print(response.content)
-        print(type(response.content))
 
         # Decode UTF-8 bytes to Unicode, and convert single quotes 
         # to double quotes to make it valid JSON
         my_json = response.content.decode('utf8').replace("'", '"')
-        print(my_json)
-        print('- ' * 20)
 
         # Load the JSON to a Python list & dump it back out as formatted JSON
         data = json.loads(my_json)
-        s = json.dumps(data, indent=4, sort_keys=True)
-        print(s)
-        print((data['result'][1]))
+        self.recommendedColorPalette = data['result']
+
+    def display_recommended_color_palette(self):
+        for i in range(5):
+            colorval = "#%02x%02x%02x" % (self.recommendedColorPalette[i][0], self.recommendedColorPalette[i][1], self.recommendedColorPalette[i][2])
+            self.canvas.create_rectangle(0 + 50*i, 0, 50 + 50*i, 50, fill=colorval)
+        self.canvas.pack(side=BOTTOM)
 
 
 def main():
